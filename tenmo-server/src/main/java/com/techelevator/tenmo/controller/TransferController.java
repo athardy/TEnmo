@@ -54,5 +54,9 @@ public class TransferController {
         return ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/transfer/pending/{userId}")
+    public List<TransferDTO> getPendingTransfers(@PathVariable int userId) {
+        return transferDao.getPendingTransfers(userId);
+    }
 
 }

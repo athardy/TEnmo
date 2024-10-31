@@ -95,6 +95,8 @@ public class App {
                 sendBucks();
             } else if (menuSelection == 5) {
                 requestBucks();
+            } else if (menuSelection == 6) {
+                viewPendingRequests();
             } else if (menuSelection == 0) {
                 continue;
             } else {
@@ -122,8 +124,18 @@ public class App {
     }
 
 	private void viewPendingRequests() {
-		// TODO Auto-generated method stub
-		
+		try {
+            int userId = currentUser.getUser().getId();
+            List<TransferDTO> pendingTransfers = transferService.getPendingTransfersByUserId(userId);
+            if (pendingTransfers.isEmpty()) {
+                System.out.println("You have no pending transfers");
+            } else {
+                consoleService.printTransfers(pendingTransfers);
+            }
+        } catch (Exception e) {
+            System.out.println("Error retrieving pending transfers.");
+            e.printStackTrace();
+        }
 	}
 
     private void sendBucks() {

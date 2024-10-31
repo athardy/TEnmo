@@ -51,6 +51,7 @@ public class ConsoleService {
         System.out.println("3: View transfer details"); // New option
         System.out.println("4: Send TE bucks");
         System.out.println("5: Request TE bucks");
+        System.out.println("6: View pending requests");
         System.out.println("0: Exit");
         System.out.println();
     }

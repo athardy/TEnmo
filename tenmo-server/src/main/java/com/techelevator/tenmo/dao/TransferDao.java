@@ -14,4 +14,6 @@ public interface TransferDao {
 
     TransferDTO getTransferById(int transferId);
 
+    List<TransferDTO> getPendingTransfers(int userId);
+
 }

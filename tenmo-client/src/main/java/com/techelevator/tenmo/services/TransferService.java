@@ -29,7 +29,7 @@ public class TransferService {
     }
 
     public TransferDTO createTransfer(CreateTransferDTO createTransferDTO) {
-2
+
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(authToken);
         HttpEntity<CreateTransferDTO> entity = new HttpEntity<>(createTransferDTO, headers);
@@ -69,6 +69,13 @@ public class TransferService {
         return Arrays.asList(userArray);
     }
 
+    public List<TransferDTO> getPendingTransfersByUserId(int userId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(authToken);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
 
+        TransferDTO[] transferArray = restTemplate.exchange(API_BASE_URL + "/transfer/pending/" + userId, HttpMethod.GET, entity, TransferDTO[].class).getBody();
+        return Arrays.asList(transferArray);
+    }
 
 }
