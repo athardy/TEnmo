@@ -15,7 +15,6 @@ public class TransferService {
 
 
     public static final int REQUEST_TYPE_ID = 2;
-    public static final int PENDING_STATUS_ID = 1;
 
     private final String API_BASE_URL;
     private final RestTemplate restTemplate = new RestTemplate();
@@ -31,7 +30,6 @@ public class TransferService {
 
     public TransferDTO createTransfer(CreateTransferDTO createTransferDTO) {
         createTransferDTO.setTransferTypeId(REQUEST_TYPE_ID);
-        createTransferDTO.setTransferStatusId(PENDING_STATUS_ID);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(authToken);

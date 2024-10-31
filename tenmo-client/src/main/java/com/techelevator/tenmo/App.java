@@ -9,16 +9,18 @@ import com.techelevator.tenmo.services.TransferService;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static com.techelevator.tenmo.services.TransferService.PENDING_STATUS_ID;
 
 public class App {
 
     private static final String API_BASE_URL = "http://localhost:8080";
+    private static final int SEND_TYPE_ID = 2;
+    private static final int REQUEST_TYPE_ID = 1;
+    private static final int PENDING_STATUS_ID = 1;
+
     private ConsoleService consoleService = new ConsoleService(-1);
     private final AuthenticationService authenticationService = new AuthenticationService(API_BASE_URL);
     private final AccountService accountService = new AccountService(API_BASE_URL);
-    private final TransferService transferService = new TransferService(API_BASE_URL);  // Add TransferService
-
+    private final TransferService transferService = new TransferService(API_BASE_URL);
 
 
     private AuthenticatedUser currentUser;
@@ -153,7 +155,7 @@ public class App {
             transferRequest.setAccountFrom(accountFrom);
             transferRequest.setAccountTo(recipientId);
             transferRequest.setAmount(amount);
-           // transferRequest.setTransferStatusId();
+            transferRequest.setTransferTypeId(SEND_TYPE_ID); 
 
             TransferDTO transfer = transferService.createTransfer(transferRequest);
             consoleService.printTransferDetails(transfer);
@@ -163,6 +165,7 @@ public class App {
             e.printStackTrace();
         }
     }
+
 
     private void viewTransferDetails() {
         int transferId = consoleService.promptForInt("Enter the Transfer ID: ");
@@ -180,7 +183,6 @@ public class App {
     private void requestBucks() {
         try {
             List<UserDTO> users = transferService.getAllUsers();
-
             int currentUserId = currentUser.getUser().getId();
 
             consoleService.printUsers(users, currentUserId);
@@ -203,7 +205,8 @@ public class App {
             transferRequest.setAccountFrom(requestedFromUserId);
             transferRequest.setAccountTo(accountService.getAccountIdByUserId(currentUserId));
             transferRequest.setAmount(amount);
-            transferRequest.setTransferStatusId(PENDING_STATUS_ID);
+            transferRequest.setTransferTypeId(REQUEST_TYPE_ID);
+
 
             TransferDTO transfer = transferService.createTransfer(transferRequest);
             consoleService.printRequestDetails(transfer);
@@ -213,6 +216,8 @@ public class App {
             e.printStackTrace();
         }
     }
+
+
 
 
 }

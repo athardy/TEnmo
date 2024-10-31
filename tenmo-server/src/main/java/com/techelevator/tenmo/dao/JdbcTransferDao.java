@@ -13,8 +13,12 @@ import java.util.List;
 
 @Component
 public class JdbcTransferDao implements TransferDao {
+    private static final int SEND_TYPE_ID = 2;
     private static final int REQUEST_TYPE_ID = 1;
+
+    private static final int APPROVED_STATUS_ID = 2;
     private static final int PENDING_STATUS_ID = 1;
+
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -25,17 +29,26 @@ public class JdbcTransferDao implements TransferDao {
     @Override
     @Transactional
     public TransferDTO createTransfer(CreateTransferDTO createTransferDTO) {
-        // need to return the correct transfer id and type from the database - we can use the transfer_status table to
-        // do all of the heavy lifting here - just need to write the correct sql code
-        int transferTypeId = REQUEST_TYPE_ID;
-        int transferStatusId = PENDING_STATUS_ID;
+        int transferTypeId = createTransferDTO.getTransferTypeId();
+        int transferStatusId;
+
+        if (transferTypeId == SEND_TYPE_ID) {
+            transferStatusId = APPROVED_STATUS_ID;
+        } else if (transferTypeId == REQUEST_TYPE_ID) {
+            transferStatusId = PENDING_STATUS_ID;
+        } else {
+            throw new IllegalArgumentException("Invalid transfer type.");
+        }
+
         String sql = "INSERT INTO transfer (transfer_type_id, transfer_status_id, account_from, account_to, amount) " +
                 "VALUES (?, ?, ?, ?, ?) RETURNING transfer_id";
-
         int transferId = jdbcTemplate.queryForObject(sql, Integer.class, transferTypeId, transferStatusId,
                 createTransferDTO.getAccountFrom(), createTransferDTO.getAccountTo(),
                 createTransferDTO.getAmount());
 
+        if (transferStatusId == APPROVED_STATUS_ID) {
+            updateBalances(createTransferDTO.getAccountFrom(), createTransferDTO.getAccountTo(), createTransferDTO.getAmount());
+        }
 
         return getTransferDetails(transferId);
     }
