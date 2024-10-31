@@ -206,6 +206,7 @@ public class App {
             transferRequest.setAccountTo(accountService.getAccountIdByUserId(currentUserId));
             transferRequest.setAmount(amount);
             transferRequest.setTransferTypeId(REQUEST_TYPE_ID);
+            transferRequest.setTransferStatusId(PENDING_STATUS_ID);
 
 
             TransferDTO transfer = transferService.createTransfer(transferRequest);

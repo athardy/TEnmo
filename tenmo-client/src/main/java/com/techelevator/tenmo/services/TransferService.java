@@ -29,8 +29,7 @@ public class TransferService {
     }
 
     public TransferDTO createTransfer(CreateTransferDTO createTransferDTO) {
-        createTransferDTO.setTransferTypeId(REQUEST_TYPE_ID);
-
+2
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(authToken);
         HttpEntity<CreateTransferDTO> entity = new HttpEntity<>(createTransferDTO, headers);
