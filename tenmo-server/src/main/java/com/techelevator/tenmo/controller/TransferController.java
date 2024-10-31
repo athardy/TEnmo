@@ -54,9 +54,22 @@ public class TransferController {
         return ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/transfer/pending/{userId}")
+    @GetMapping("/pending/{userId}")
     public List<TransferDTO> getPendingTransfers(@PathVariable int userId) {
         return transferDao.getPendingTransfers(userId);
+    }
+
+    @Autowired
+    private TransferService transferService;
+
+    @PutMapping("/{transferId}/updateStatus")
+    public ResponseEntity<TransferDTO> updateTransferStatus(@PathVariable int transferId, @RequestParam String action) {
+        try {
+            TransferDTO updatedTransfer = transferService.updateTransferStatus(transferId, action);
+            return ResponseEntity.ok(updatedTransfer);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 
 }

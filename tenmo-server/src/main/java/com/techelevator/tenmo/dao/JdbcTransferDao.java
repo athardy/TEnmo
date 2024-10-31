@@ -135,9 +135,9 @@ public class JdbcTransferDao implements TransferDao {
     }
     @Override
     public List<TransferDTO> getPendingTransfers(int userId) {
-        String sql = "SELECT t.transfer_id, t.transfer_type_id, t.transfer_status_id, t.account_from, t.account_to, t.amount" +
-                "FROM transfer t" +
-                "JOIN account a ON a.account_id = t.account_to" +
+        String sql = "SELECT t.transfer_id, t.transfer_type_id, t.transfer_status_id, t.account_from, t.account_to, t.amount " +
+                "FROM transfer t " +
+                "JOIN account a ON a.account_id = t.account_to " +
                 "WHERE t.transfer_status_id = ? AND a.user_id = ?;";
 
         List<TransferDTO> pendingTransfers = new ArrayList<>();
@@ -147,6 +147,15 @@ public class JdbcTransferDao implements TransferDao {
             pendingTransfers.add(mapRowToTransferDTO(results));
         }
         return pendingTransfers;
+    }
+
+    @Override
+    public void updateTransferStatus(int transferId, int statusId) {
+        String sql = "UPDATE transfer SET transfer_status_id = ? WHERE transfer_id = ?";
+
+        jdbcTemplate.update(sql, statusId, transferId);
+
+
     }
 
 }
