@@ -99,4 +99,8 @@ public class User {
               ", authorities=" + authorities +
               '}';
    }
+
+   public void setAccountId(int accountId) {
+
+   }
 }
