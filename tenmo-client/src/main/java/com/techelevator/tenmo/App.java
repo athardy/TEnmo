@@ -123,20 +123,56 @@ public class App {
         consoleService.printTransfers(transfers);
     }
 
-	private void viewPendingRequests() {
-		try {
+    private void viewPendingRequests() {
+        try {
             int userId = currentUser.getUser().getId();
             List<TransferDTO> pendingTransfers = transferService.getPendingTransfersByUserId(userId);
+
             if (pendingTransfers.isEmpty()) {
-                System.out.println("You have no pending transfers");
+                System.out.println("You have no pending transfers.");
+                return;
+            }
+
+            consoleService.printTransfers(pendingTransfers);
+
+            int transferId = consoleService.promptForInt("Enter the ID of the transfer you want to approve/reject (or 0 to cancel): ");
+            if (transferId == 0) {
+                System.out.println("Cancelled.");
+                return;
+            }
+
+            TransferDTO selectedTransfer = pendingTransfers.stream()
+                    .filter(t -> t.getTransferId() == transferId)
+                    .findFirst()
+                    .orElse(null);
+
+            if (selectedTransfer == null) {
+                System.out.println("Invalid transfer ID.");
+                return;
+            }
+
+            BigDecimal balance = accountService.getBalance();
+            if (selectedTransfer.getAmount().compareTo(balance) > 0) {
+                System.out.println("Insufficient balance to approve this transfer.");
+                return;
+            }
+
+            String action = consoleService.promptForString("Type 'A' to approve or 'R' to reject: ");
+            if (action.equalsIgnoreCase("A")) {
+                transferService.approveTransfer(transferId);
+                System.out.println("Transfer approved.");
+            } else if (action.equalsIgnoreCase("R")) {
+                transferService.rejectTransfer(transferId);
+                System.out.println("Transfer rejected.");
             } else {
-                consoleService.printTransfers(pendingTransfers);
+                System.out.println("Invalid choice. Cancelling action.");
             }
         } catch (Exception e) {
             System.out.println("Error retrieving pending transfers.");
             e.printStackTrace();
         }
-	}
+    }
+
 
     private void sendBucks() {
         try {

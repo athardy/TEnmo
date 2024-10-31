@@ -8,12 +8,16 @@ import com.techelevator.tenmo.model.UserDTO;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.techelevator.tenmo.dao.JdbcTransferDao.APPROVED_STATUS_ID;
+
+@Service
 public class TransferService {
 
 
@@ -22,9 +26,16 @@ public class TransferService {
     private final String API_BASE_URL;
     private final RestTemplate restTemplate = new RestTemplate();
     private String authToken;
+    private final TransferDao transferDao;
+    private final AccountDao accountDao;
 
-    public TransferService(String apiUrl) {
+    private static final int APPROVED_STATUS_ID = 2;
+    private static final int REJECTED_STATUS_ID = 3;
+
+    public TransferService(String apiUrl, TransferDao transferDao, AccountDao accountDao) {
         this.API_BASE_URL = apiUrl;
+        this.transferDao = transferDao;
+        this.accountDao = accountDao;
     }
 
     public void setAuthToken(String authToken) {
@@ -87,7 +98,7 @@ public class TransferService {
             throw new IllegalArgumentException("Only pending transfers can be updated.");
         }
         if (action.equalsIgnoreCase("approve")) {
-            BigDecimal accountBalance = accountDao.getBalanceByAccountId(transfer.getAccountFrom());
+            BigDecimal accountBalance = accountDao.updateBalances(transfer.getAccountFrom(), transfer.getAccountTo(), accountDao.getBalanceByUserId());
             if (accountBalance.compareTo(transfer.getAmount()) < 0) {
                 throw new IllegalArgumentException("Insufficient funds");
             }

@@ -11,7 +11,7 @@ public interface AccountDao {
     int getUserIdByUsername(String username);
     Integer findAccountIdByUserId(int userId);
     List<UserDTO> findAllUsers();
-
+    void updateBalances(int accountFromId, int accountToId, BigDecimal amount);
 }
 
 
