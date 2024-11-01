@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
-public class TransferClientService {
+public class TransferService {
 
     private final String API_BASE_URL;
     private final RestTemplate restTemplate = new RestTemplate();
@@ -27,7 +27,7 @@ public class TransferClientService {
         this.authToken = authToken;
     }
 
-    public TransferClientService(String apiUrl) {
+    public TransferService(String apiUrl) {
         this.API_BASE_URL = apiUrl;
     }
 

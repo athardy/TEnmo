@@ -46,6 +46,16 @@ public class AccountController {
                 .collect(Collectors.toList());
     }
 
+    @GetMapping("/account/{accountId}")
+    public ResponseEntity<Integer> getUserIdByAccountId(@PathVariable int accountId) {
+        Integer userId = accountDao.getUserIdByAccountId(accountId);
+        if (userId != null) {
+            return ResponseEntity.ok(userId);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+
 }
 
 

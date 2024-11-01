@@ -4,12 +4,10 @@ import com.techelevator.tenmo.dao.AccountDao;
 import com.techelevator.tenmo.dao.TransferDao;
 import com.techelevator.tenmo.model.TransferDTO;
 import com.techelevator.tenmo.model.CreateTransferDTO;
-import com.techelevator.tenmo.services.TransferService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -68,19 +66,19 @@ public class TransferController {
         return transferDao.getPendingTransfers(userId);
     }
 
-    @Autowired
-    private TransferService transferService;
-
-    @PutMapping("/{transferId}/updateStatus")
-    public ResponseEntity<TransferDTO> updateTransferStatus(@PathVariable int transferId, @RequestParam String action) {
-        System.out.println("Received request - Transfer ID: " + transferId + ", Action: " + action);
-        try {
-            TransferDTO updatedTransfer = transferService.updateTransferStatus(transferId, action);
-            return ResponseEntity.ok(updatedTransfer);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
-    }
+//    @Autowired
+//    private TransferService transferService;
+//
+////    @PutMapping("/{transferId}/updateStatus")
+////    public ResponseEntity<TransferDTO> updateTransferStatus(@PathVariable int transferId, @RequestParam String action) {
+////        System.out.println("Received request - Transfer ID: " + transferId + ", Action: " + action);
+////        try {
+////            TransferDTO updatedTransfer = transferService.updateTransferStatus(transferId, action);
+////            return ResponseEntity.ok(updatedTransfer);
+////        } catch (IllegalArgumentException e) {
+////            return ResponseEntity.badRequest().body(null);
+////        }
+////    }
 
     @PutMapping("/{transferId}/approve")
     public ResponseEntity<?> approveTransfer(@PathVariable int transferId) {

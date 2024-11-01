@@ -13,18 +13,13 @@ public class AccountService {
     private final String API_BASE_URL;
     private final RestTemplate restTemplate = new RestTemplate();
     private String authToken;
-    private final AccountDao accountDao;
+
 
     @Autowired
-    public AccountService (AccountDao accountDao){
-        this.accountDao=accountDao;
-        this.API_BASE_URL = null;
+    public AccountService (String url){
+        this.API_BASE_URL = url;
     }
 
-    public AccountService(String apiUrl) {
-        this.API_BASE_URL = apiUrl;
-        this.accountDao = null;
-    }
 
     public void setAuthToken(String authToken) {
         this.authToken = authToken;
@@ -43,9 +38,11 @@ public class AccountService {
         return restTemplate.getForObject(url, Integer.class);
     }
 
-    public int getUserIdByAccountId(int accountId){
-        return accountDao.getUserIdByAccountId(accountId);
-    }
 
+
+    public int getUserIdByAccountId(int accountId) {
+        String url = API_BASE_URL + "/account/account/" + accountId;
+        return restTemplate.getForObject(url, Integer.class);
+    }
 
 }

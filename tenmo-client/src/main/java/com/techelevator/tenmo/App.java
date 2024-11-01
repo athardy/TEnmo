@@ -1,11 +1,10 @@
 package com.techelevator.tenmo;
 
-import com.techelevator.tenmo.dao.AccountDao;
 import com.techelevator.tenmo.model.*;
 import com.techelevator.tenmo.services.AccountService;
 import com.techelevator.tenmo.services.AuthenticationService;
 import com.techelevator.tenmo.services.ConsoleService;
-import com.techelevator.tenmo.services.TransferClientService;
+import com.techelevator.tenmo.services.TransferService;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -20,7 +19,7 @@ public class App {
     private ConsoleService consoleService = new ConsoleService(-1);
     private final AuthenticationService authenticationService = new AuthenticationService(API_BASE_URL);
     private final AccountService accountService = new AccountService(API_BASE_URL);
-    private final TransferClientService transferService = new TransferClientService(API_BASE_URL);
+    private final TransferService transferService = new TransferService(API_BASE_URL);
 
     private AuthenticatedUser currentUser;
 
