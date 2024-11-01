@@ -1,5 +1,6 @@
 package com.techelevator.tenmo;
 
+import com.techelevator.tenmo.dao.AccountDao;
 import com.techelevator.tenmo.model.*;
 import com.techelevator.tenmo.services.AccountService;
 import com.techelevator.tenmo.services.AuthenticationService;
@@ -120,6 +121,7 @@ public class App {
 
     private void viewPendingRequests() {
         try {
+            List<UserDTO> users = transferService.getAllUsers();
             int userId = currentUser.getUser().getId();  // Get the current user's ID
             List<TransferDTO> pendingTransfers = transferService.getPendingTransfersByUserId(userId);
 
@@ -143,6 +145,14 @@ public class App {
 
             if (selectedTransfer == null) {
                 System.out.println("Invalid transfer ID.");
+                return;
+            }
+
+
+            int currentUserId = currentUser.getUser().getId();
+            int recipientUserId = accountService.getUserIdByAccountId(selectedTransfer.getAccountTo());
+            if (currentUserId == recipientUserId){
+                System.out.println("You are not authorized to approve your own transfer requests!!!! naughty.");
                 return;
             }
 

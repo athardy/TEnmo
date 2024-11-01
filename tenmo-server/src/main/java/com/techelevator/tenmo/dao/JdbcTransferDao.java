@@ -57,18 +57,24 @@ public class JdbcTransferDao implements TransferDao {
     @Override
     public List<TransferDTO> getTransfersByUserId(int userId) {
         String sql = "SELECT t.transfer_id, t.transfer_type_id, t.transfer_status_id, " +
-                "t.account_from, t.account_to, t.amount " +
+                "t.account_from, u_from.username AS from_username, " +
+                "t.account_to, u_to.username AS to_username, " +
+                "t.amount " +
                 "FROM transfer t " +
-                "JOIN account a ON a.account_id = t.account_from OR a.account_id = t.account_to " +
-                "WHERE a.user_id = ?";
+                "JOIN account a_from ON t.account_from = a_from.account_id " +
+                "JOIN tenmo_user u_from ON a_from.user_id = u_from.user_id " +
+                "JOIN account a_to ON t.account_to = a_to.account_id " +
+                "JOIN tenmo_user u_to ON a_to.user_id = u_to.user_id " +
+                "WHERE a_from.user_id = ? OR a_to.user_id = ?";
 
         List<TransferDTO> transfers = new ArrayList<>();
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId);
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, userId, userId);
         while (results.next()) {
             transfers.add(mapRowToTransferDTO(results));
         }
         return transfers;
     }
+
 
     public TransferDTO getTransferDetails(int transferId) {
         String sql = "SELECT t.transfer_id, t.amount, t.account_from, u_from.username AS from_username, " +
@@ -107,8 +113,11 @@ public class JdbcTransferDao implements TransferDao {
         transfer.setAccountFrom(rs.getInt("account_from"));
         transfer.setAccountTo(rs.getInt("account_to"));
         transfer.setAmount(rs.getBigDecimal("amount"));
+        transfer.setFromUsername(rs.getString("from_username"));
+        transfer.setToUsername(rs.getString("to_username"));
         return transfer;
     }
+
 
     private void updateBalances(int accountFromId, int accountToId, BigDecimal amount) {
         String deductBalanceSql = "UPDATE account SET balance = balance - ? WHERE account_id = ?";
@@ -135,19 +144,25 @@ public class JdbcTransferDao implements TransferDao {
     }
     @Override
     public List<TransferDTO> getPendingTransfers(int userId) {
-        String sql = "SELECT t.transfer_id, t.transfer_type_id, t.transfer_status_id, t.account_from, t.account_to, t.amount " +
+        String sql = "SELECT t.transfer_id, t.transfer_type_id, t.transfer_status_id, " +
+                "t.account_from, u_from.username AS from_username, " +
+                "t.account_to, u_to.username AS to_username, t.amount " +
                 "FROM transfer t " +
-                "JOIN account a ON a.account_id = t.account_to " +
-                "WHERE t.transfer_status_id = ? AND a.user_id = ?;";
+                "JOIN account a_from ON t.account_from = a_from.account_id " +
+                "JOIN tenmo_user u_from ON a_from.user_id = u_from.user_id " +
+                "JOIN account a_to ON t.account_to = a_to.account_id " +
+                "JOIN tenmo_user u_to ON a_to.user_id = u_to.user_id " +
+                "WHERE t.transfer_status_id = ? AND (a_from.user_id = ? OR a_to.user_id = ?)";
 
         List<TransferDTO> pendingTransfers = new ArrayList<>();
-        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, PENDING_STATUS_ID, userId);
+        SqlRowSet results = jdbcTemplate.queryForRowSet(sql, PENDING_STATUS_ID, userId, userId);
 
         while (results.next()) {
             pendingTransfers.add(mapRowToTransferDTO(results));
         }
         return pendingTransfers;
     }
+
 
     @Override
     public void updateTransferStatus(int transferId, int statusId) {
@@ -157,5 +172,7 @@ public class JdbcTransferDao implements TransferDao {
 
 
     }
+
+
 
 }

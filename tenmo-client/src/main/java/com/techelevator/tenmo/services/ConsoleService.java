@@ -109,17 +109,17 @@ public class ConsoleService {
     }
 
     public void printTransfers(List<TransferDTO> transfers) {
-        System.out.println("-------------------------------------------");
+        System.out.println("--------------------------------------------------------------");
         System.out.println("Transfers");
-        System.out.println("ID          From/To         Amount");
-        System.out.println("-------------------------------------------");
+        System.out.println("ID     $ From / $ To                                  Amount");
+        System.out.println("--------------------------------------------------------------");
 
         for (TransferDTO transfer : transfers) {
-            String fromTo = (transfer.getAccountFrom() == getCurrentAccountId()) ? "To: " + transfer.getAccountTo() : "From: " + transfer.getAccountFrom();
-            System.out.printf("%-12d %-15s $%.2f%n", transfer.getTransferId(), fromTo, transfer.getAmount());
+            String fromTo = transfer.getFromUsername()+"/"+transfer.getToUsername();//(transfer.getAccountFrom() == getCurrentAccountId()) ? "To: " + transfer.getToUsername() : "From: " + transfer.getFromUsername();
+            System.out.printf("%-12d %-40s $%.2f%n", transfer.getTransferId(), fromTo, transfer.getAmount());
         }
 
-        System.out.println("-------------------------------------------");
+        System.out.println("--------------------------------------------------------------");
     }
 
     public void printTransferDetails(TransferDTO transfer) {

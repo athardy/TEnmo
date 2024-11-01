@@ -23,6 +23,26 @@ public class JdbcAccountDao implements AccountDao {
 
         String sql = "SELECT balance FROM account WHERE user_id = ?";
         try {
+
+            BigDecimal balance = jdbcTemplate.queryForObject(sql, BigDecimal.class, userId);
+            System.out.println("Retrieved balance: " + balance);
+            return balance;
+        } catch (EmptyResultDataAccessException e) {
+            System.out.println("No balance found for user_id: " + userId);
+            return BigDecimal.ZERO;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error retrieving balance for user_id: " + userId, e);
+        }
+    }
+
+    @Override
+    public BigDecimal getBalanceByAccountId(int userId) {
+        System.out.println("Retrieving balance for user_id: " + userId);
+
+        String sql = "SELECT balance FROM account WHERE account_id = ?";
+        try {
+
             BigDecimal balance = jdbcTemplate.queryForObject(sql, BigDecimal.class, userId);
             System.out.println("Retrieved balance: " + balance);
             return balance;
@@ -68,6 +88,11 @@ public class JdbcAccountDao implements AccountDao {
 
         jdbcTemplate.update(deductBalanceSql, amount, accountFromId);
         jdbcTemplate.update(addBalanceSql, amount, accountToId);
+    }
+
+    public int getUserIdByAccountId (int accountId) {
+        String sql = "SELECT user_id FROM account WHERE account_id = ?";
+        return jdbcTemplate.queryForObject(sql, Integer.class, accountId);
     }
 
 

@@ -1,5 +1,6 @@
 package com.techelevator.tenmo.controller;
 
+import com.techelevator.tenmo.dao.AccountDao;
 import com.techelevator.tenmo.dao.TransferDao;
 import com.techelevator.tenmo.model.TransferDTO;
 import com.techelevator.tenmo.model.CreateTransferDTO;
@@ -8,8 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -18,10 +21,15 @@ import java.util.List;
 public class TransferController {
 
     private final TransferDao transferDao;
+    private final AccountDao accountDao;
+    private static final int APPROVED_STATUS_ID = 2;
+    private static final int REJECTED_STATUS_ID = 3;
+    private static final int PENDING_STATUS_ID = 1;
 
     @Autowired
-    public TransferController(TransferDao transferDao) {
+    public TransferController(TransferDao transferDao, AccountDao accountDao) {
         this.transferDao = transferDao;
+        this.accountDao = accountDao;
     }
 
     @PostMapping
@@ -75,29 +83,60 @@ public class TransferController {
     }
 
     @PutMapping("/{transferId}/approve")
-    public ResponseEntity<TransferDTO> approveTransfer(@PathVariable int transferId){
+    public ResponseEntity<?> approveTransfer(@PathVariable int transferId) {
 
-        try {
-            TransferDTO updatedTranfer = transferService.updateTransferStatus(transferId, "approve");
-            return ResponseEntity.ok(updatedTranfer);
-        } catch (IllegalArgumentException e) {
+        TransferDTO transfer = transferDao.getTransferById(transferId);
+
+        if (transfer == null){
+            return ResponseEntity.notFound().build();
+        }
+
+        if(transfer.getTransferStatusId() != PENDING_STATUS_ID) {
             return ResponseEntity.badRequest().body(null);
         }
+
+//        //checking that you're not sending money to yourself
+//        int currentUserId = Integer.parseInt(SecurityContextHolder.getContext().getAuthentication().getName());
+//        if (transfer.getAccountTo() != currentUserId) {
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Error: You cannot approve your own transfer requests!!!!! Naughty.");
+//        }
+
+        BigDecimal accountBalance = accountDao.getBalanceByAccountId(transfer.getAccountFrom());
+        if(accountBalance.equals(null)){
+            System.out.println("Account Balance retreival failed or returned empty for user");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+
+        if(accountBalance.compareTo(transfer.getAmount()) < 0){
+            System.out.println("Insufficient Funds.");
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        transfer.setTransferStatusId(APPROVED_STATUS_ID);
+        transferDao.updateTransferStatus(transferId, APPROVED_STATUS_ID);
+        accountDao.updateBalances(transfer.getAccountFrom(), transfer.getAccountTo(), transfer.getAmount());
+
+        return ResponseEntity.ok(transfer);
+
     }
 
     @PutMapping("/{transferId}/reject")
-    public ResponseEntity<TransferDTO> rejectTransfer(@PathVariable int transferId){
+    public ResponseEntity<TransferDTO> rejectTransfer(@PathVariable int transferId) {
 
-        try {
-            TransferDTO updatedTranfer = transferService.updateTransferStatus(transferId, "reject");
-            return ResponseEntity.ok(updatedTranfer);
-        } catch (IllegalArgumentException e) {
+        TransferDTO transfer = transferDao.getTransferById(transferId);
+
+        if (transfer == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (transfer.getTransferStatusId() != PENDING_STATUS_ID) {
             return ResponseEntity.badRequest().body(null);
         }
+
+        transfer.setTransferStatusId(REJECTED_STATUS_ID);
+        transferDao.updateTransferStatus(transferId, REJECTED_STATUS_ID);
+
+        return ResponseEntity.ok(transfer);
     }
-
-
-
-
 
 }
