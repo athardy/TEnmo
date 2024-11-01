@@ -29,6 +29,7 @@ public class App {
     }
 
     private void run() {
+        consoleService.printBanner();
         consoleService.printGreeting();
         loginMenu();
         if (currentUser != null) {

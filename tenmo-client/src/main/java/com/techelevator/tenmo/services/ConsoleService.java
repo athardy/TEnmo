@@ -30,10 +30,17 @@ public class ConsoleService {
         return menuSelection;
     }
 
+    public void printBanner() {
+        System.out.println(" __________");
+        System.out.println("/_  __/ __/__  __ _  ___");
+        System.out.println(" / / / _// _ \\/  ' \\/ _ \\");
+        System.out.println("/_/ /___/_//_/_/_/_/\\___/");
+    }
+
     public void printGreeting() {
-        System.out.println("*********************");
-        System.out.println("* Welcome to TEnmo! *");
-        System.out.println("*********************");
+        System.out.println("*************************");
+        System.out.println("*   Welcome to TEnmo!   *");
+        System.out.println("*************************");
     }
 
     public void printLoginMenu() {
