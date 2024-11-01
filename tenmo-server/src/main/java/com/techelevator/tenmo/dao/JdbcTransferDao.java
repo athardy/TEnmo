@@ -16,7 +16,7 @@ public class JdbcTransferDao implements TransferDao {
     private static final int SEND_TYPE_ID = 2;
     private static final int REQUEST_TYPE_ID = 1;
 
-    private static final int APPROVED_STATUS_ID = 2;
+    public static final int APPROVED_STATUS_ID = 2;
     private static final int PENDING_STATUS_ID = 1;
 
 

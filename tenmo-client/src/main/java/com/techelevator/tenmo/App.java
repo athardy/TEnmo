@@ -4,11 +4,10 @@ import com.techelevator.tenmo.model.*;
 import com.techelevator.tenmo.services.AccountService;
 import com.techelevator.tenmo.services.AuthenticationService;
 import com.techelevator.tenmo.services.ConsoleService;
-import com.techelevator.tenmo.services.TransferService;
+import com.techelevator.tenmo.services.TransferClientService;
 
 import java.math.BigDecimal;
 import java.util.List;
-
 
 public class App {
 
@@ -20,8 +19,7 @@ public class App {
     private ConsoleService consoleService = new ConsoleService(-1);
     private final AuthenticationService authenticationService = new AuthenticationService(API_BASE_URL);
     private final AccountService accountService = new AccountService(API_BASE_URL);
-    private final TransferService transferService = new TransferService(API_BASE_URL);
-
+    private final TransferClientService transferService = new TransferClientService(API_BASE_URL);
 
     private AuthenticatedUser currentUser;
 
@@ -31,7 +29,7 @@ public class App {
     }
 
     private void run() {
-        consoleService.printGreeting();  // Now consoleService is initialized at the start
+        consoleService.printGreeting();
         loginMenu();
         if (currentUser != null) {
             mainMenu();
@@ -71,8 +69,6 @@ public class App {
             String authToken = currentUser.getToken();
             accountService.setAuthToken(authToken);
             transferService.setAuthToken(authToken);
-
-
             int accountId = accountService.getAccountIdByUserId(currentUser.getUser().getId());
             consoleService = new ConsoleService(accountId);
         } else {
@@ -106,7 +102,6 @@ public class App {
         }
     }
 
-
     private void viewCurrentBalance() {
         try {
             BigDecimal balance = accountService.getBalance();
@@ -125,7 +120,7 @@ public class App {
 
     private void viewPendingRequests() {
         try {
-            int userId = currentUser.getUser().getId();
+            int userId = currentUser.getUser().getId();  // Get the current user's ID
             List<TransferDTO> pendingTransfers = transferService.getPendingTransfersByUserId(userId);
 
             if (pendingTransfers.isEmpty()) {
@@ -174,22 +169,64 @@ public class App {
     }
 
 
+
+
+
+//    private void viewPendingRequests() {
+//        try {
+//            int userId = currentUser.getUser().getId();
+//            List<TransferDTO> pendingTransfers = transferService.getPendingTransfersByUserId(userId);
+//            if (pendingTransfers.isEmpty()) {
+//                System.out.println("You have no pending transfers.");
+//                return;
+//            }
+//            consoleService.printTransfers(pendingTransfers);
+//            int transferId = consoleService.promptForInt("Enter the ID of the transfer you want to approve/reject (or 0 to cancel): ");
+//            if (transferId == 0) {
+//                System.out.println("Cancelled.");
+//                return;
+//            }
+//            TransferDTO selectedTransfer = pendingTransfers.stream()
+//                    .filter(t -> t.getTransferId() == transferId)
+//                    .findFirst()
+//                    .orElse(null);
+//            if (selectedTransfer == null) {
+//                System.out.println("Invalid transfer ID.");
+//                return;
+//            }
+//            BigDecimal balance = accountService.getBalance();
+//            if (selectedTransfer.getAmount().compareTo(balance) > 0) {
+//                System.out.println("Insufficient balance to approve this transfer.");
+//                return;
+//            }
+//            String action = consoleService.promptForString("Type 'A' to approve or 'R' to reject: ");
+//            if (action.equalsIgnoreCase("A")) {
+//                transferService.approveTransfer(transferId);
+//                System.out.println("Transfer approved.");
+//            } else if (action.equalsIgnoreCase("R")) {
+//                transferService.rejectTransfer(transferId);
+//                System.out.println("Transfer rejected.");
+//            } else {
+//                System.out.println("Invalid choice. Cancelling action.");
+//            }
+//        } catch (Exception e) {
+//            System.out.println("Error retrieving pending transfers.");
+//            e.printStackTrace();
+//        }
+//    }
+
     private void sendBucks() {
         try {
             List<UserDTO> users = transferService.getAllUsers();
             consoleService.printUsers(users, currentUser.getUser().getId());
-
             int recipientId = consoleService.promptForInt("Enter the account ID of the recipient: ");
             int accountFrom = accountService.getAccountIdByUserId(currentUser.getUser().getId());
-
             if (accountFrom == recipientId) {
                 System.out.println("You cannot send TE bucks to your own account.");
                 return;
             }
-
             BigDecimal amount = consoleService.promptForBigDecimal("Enter amount to send: ");
             BigDecimal balance = accountService.getBalance();
-
             if (amount.compareTo(BigDecimal.ZERO) <= 0) {
                 System.out.println("Transfer amount must be greater than zero.");
                 return;
@@ -198,22 +235,18 @@ public class App {
                 System.out.println("Insufficient balance. Please enter an amount within your available balance.");
                 return;
             }
-
             CreateTransferDTO transferRequest = new CreateTransferDTO();
             transferRequest.setAccountFrom(accountFrom);
             transferRequest.setAccountTo(recipientId);
             transferRequest.setAmount(amount);
-            transferRequest.setTransferTypeId(SEND_TYPE_ID); 
-
+            transferRequest.setTransferTypeId(SEND_TYPE_ID);
             TransferDTO transfer = transferService.createTransfer(transferRequest);
             consoleService.printTransferDetails(transfer);
-
         } catch (Exception e) {
             System.out.println("Error processing transfer. Please try again.");
             e.printStackTrace();
         }
     }
-
 
     private void viewTransferDetails() {
         int transferId = consoleService.promptForInt("Enter the Transfer ID: ");
@@ -225,48 +258,32 @@ public class App {
         }
     }
 
-
-
-
     private void requestBucks() {
         try {
             List<UserDTO> users = transferService.getAllUsers();
             int currentUserId = currentUser.getUser().getId();
-
             consoleService.printUsers(users, currentUserId);
-
             int requestedFromUserId = consoleService.promptForInt("Enter the account ID of the user you want to request TE Bucks from: ");
-
             if (requestedFromUserId == accountService.getAccountIdByUserId(currentUserId)) {
                 System.out.println("You cannot request TE Bucks from your own account.");
                 return;
             }
-
             BigDecimal amount = consoleService.promptForBigDecimal("Enter the amount to request: ");
-
             if (amount.compareTo(BigDecimal.ZERO) <= 0) {
                 System.out.println("Request amount must be greater than zero.");
                 return;
             }
-
             CreateTransferDTO transferRequest = new CreateTransferDTO();
             transferRequest.setAccountFrom(requestedFromUserId);
             transferRequest.setAccountTo(accountService.getAccountIdByUserId(currentUserId));
             transferRequest.setAmount(amount);
             transferRequest.setTransferTypeId(REQUEST_TYPE_ID);
             transferRequest.setTransferStatusId(PENDING_STATUS_ID);
-
-
             TransferDTO transfer = transferService.createTransfer(transferRequest);
             consoleService.printRequestDetails(transfer);
-
         } catch (Exception e) {
             System.out.println("Error processing transfer request. Please try again.");
             e.printStackTrace();
         }
     }
-
-
-
-
 }

@@ -3,6 +3,7 @@ package com.techelevator.tenmo.controller;
 import com.techelevator.tenmo.dao.TransferDao;
 import com.techelevator.tenmo.model.TransferDTO;
 import com.techelevator.tenmo.model.CreateTransferDTO;
+import com.techelevator.tenmo.services.TransferService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,6 +65,7 @@ public class TransferController {
 
     @PutMapping("/{transferId}/updateStatus")
     public ResponseEntity<TransferDTO> updateTransferStatus(@PathVariable int transferId, @RequestParam String action) {
+        System.out.println("Received request - Transfer ID: " + transferId + ", Action: " + action);
         try {
             TransferDTO updatedTransfer = transferService.updateTransferStatus(transferId, action);
             return ResponseEntity.ok(updatedTransfer);
@@ -71,5 +73,31 @@ public class TransferController {
             return ResponseEntity.badRequest().body(null);
         }
     }
+
+    @PutMapping("/{transferId}/approve")
+    public ResponseEntity<TransferDTO> approveTransfer(@PathVariable int transferId){
+
+        try {
+            TransferDTO updatedTranfer = transferService.updateTransferStatus(transferId, "approve");
+            return ResponseEntity.ok(updatedTranfer);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    @PutMapping("/{transferId}/reject")
+    public ResponseEntity<TransferDTO> rejectTransfer(@PathVariable int transferId){
+
+        try {
+            TransferDTO updatedTranfer = transferService.updateTransferStatus(transferId, "reject");
+            return ResponseEntity.ok(updatedTranfer);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+
+
+
 
 }
