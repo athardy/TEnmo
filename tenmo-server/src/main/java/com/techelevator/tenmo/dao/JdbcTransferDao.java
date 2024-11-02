@@ -19,7 +19,6 @@ public class JdbcTransferDao implements TransferDao {
     public static final int APPROVED_STATUS_ID = 2;
     private static final int PENDING_STATUS_ID = 1;
 
-
     private final JdbcTemplate jdbcTemplate;
 
     public JdbcTransferDao(JdbcTemplate jdbcTemplate) {
@@ -53,10 +52,9 @@ public class JdbcTransferDao implements TransferDao {
         return getTransferDetails(transferId);
     }
 
-
     @Override
     public List<TransferDTO> getTransfersByUserId(int userId) {
-        String sql = "SELECT t.transfer_id, t.transfer_type_id, t.transfer_status_id, " +
+        String sql = "SELECT t.transfer_id, t.transfer_type_id, t.transfer_status_id, ts.transfer_status_desc AS transfer_status, " +
                 "t.account_from, u_from.username AS from_username, " +
                 "t.account_to, u_to.username AS to_username, " +
                 "t.amount " +
@@ -65,6 +63,7 @@ public class JdbcTransferDao implements TransferDao {
                 "JOIN tenmo_user u_from ON a_from.user_id = u_from.user_id " +
                 "JOIN account a_to ON t.account_to = a_to.account_id " +
                 "JOIN tenmo_user u_to ON a_to.user_id = u_to.user_id " +
+                "JOIN transfer_status ts ON t.transfer_status_id = ts.transfer_status_id " +
                 "WHERE a_from.user_id = ? OR a_to.user_id = ?";
 
         List<TransferDTO> transfers = new ArrayList<>();
@@ -74,7 +73,6 @@ public class JdbcTransferDao implements TransferDao {
         }
         return transfers;
     }
-
 
     public TransferDTO getTransferDetails(int transferId) {
         String sql = "SELECT t.transfer_id, t.amount, t.account_from, u_from.username AS from_username, " +
@@ -99,10 +97,10 @@ public class JdbcTransferDao implements TransferDao {
             transfer.setToUsername(rs.getString("to_username"));
             transfer.setTransferStatus(rs.getString("transfer_status"));
             transfer.setTransferType(rs.getString("transfer_type"));
+
             return transfer;
         });
     }
-
 
 
     private TransferDTO mapRowToTransferDTO(SqlRowSet rs) {
@@ -115,16 +113,15 @@ public class JdbcTransferDao implements TransferDao {
         transfer.setAmount(rs.getBigDecimal("amount"));
         transfer.setFromUsername(rs.getString("from_username"));
         transfer.setToUsername(rs.getString("to_username"));
+        transfer.setTransferStatus(rs.getString("transfer_status"));
         return transfer;
     }
-
 
     private void updateBalances(int accountFromId, int accountToId, BigDecimal amount) {
         String deductBalanceSql = "UPDATE account SET balance = balance - ? WHERE account_id = ?";
         String addBalanceSql = "UPDATE account SET balance = balance + ? WHERE account_id = ?";
 
         jdbcTemplate.update(deductBalanceSql, amount, accountFromId);
-
         jdbcTemplate.update(addBalanceSql, amount, accountToId);
     }
 
@@ -142,9 +139,10 @@ public class JdbcTransferDao implements TransferDao {
             return transfer;
         }, transferId);
     }
+
     @Override
     public List<TransferDTO> getPendingTransfers(int userId) {
-        String sql = "SELECT t.transfer_id, t.transfer_type_id, t.transfer_status_id, " +
+        String sql = "SELECT t.transfer_id, t.transfer_type_id, t.transfer_status_id, ts.transfer_status_desc AS transfer_status, " +
                 "t.account_from, u_from.username AS from_username, " +
                 "t.account_to, u_to.username AS to_username, t.amount " +
                 "FROM transfer t " +
@@ -152,6 +150,7 @@ public class JdbcTransferDao implements TransferDao {
                 "JOIN tenmo_user u_from ON a_from.user_id = u_from.user_id " +
                 "JOIN account a_to ON t.account_to = a_to.account_id " +
                 "JOIN tenmo_user u_to ON a_to.user_id = u_to.user_id " +
+                "JOIN transfer_status ts ON t.transfer_status_id = ts.transfer_status_id " +
                 "WHERE t.transfer_status_id = ? AND (a_from.user_id = ? OR a_to.user_id = ?)";
 
         List<TransferDTO> pendingTransfers = new ArrayList<>();
@@ -163,16 +162,9 @@ public class JdbcTransferDao implements TransferDao {
         return pendingTransfers;
     }
 
-
     @Override
     public void updateTransferStatus(int transferId, int statusId) {
         String sql = "UPDATE transfer SET transfer_status_id = ? WHERE transfer_id = ?";
-
         jdbcTemplate.update(sql, statusId, transferId);
-
-
     }
-
-
-
 }

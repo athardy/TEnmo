@@ -41,16 +41,19 @@ public class App {
         int menuSelection = -1;
         while (menuSelection != 0 && currentUser == null) {
             consoleService.printLoginMenu();
-            menuSelection = consoleService.promptForMenuSelection("Please choose an option: ");
+            menuSelection = consoleService.promptForMenuSelection("Please choose an option (#): ");
             if (menuSelection == 1) {
                 handleRegister();
             } else if (menuSelection == 2) {
                 handleLogin();
+            } else if (menuSelection == 0){
+                System.out.println("Closing app...");
             } else if (menuSelection != 0) {
                 System.out.println("Invalid Selection");
                 consoleService.pause();
             }
         }
+
     }
 
     private void handleRegister() {
@@ -65,7 +68,7 @@ public class App {
 
     private void handleLogin() {
         UserCredentials credentials = consoleService.promptForCredentials();
-        currentUser = authenticationService.login(credentials);
+    currentUser = authenticationService.login(credentials);
         if (currentUser != null) {
             String authToken = currentUser.getToken();
             accountService.setAuthToken(authToken);
@@ -81,12 +84,13 @@ public class App {
         int menuSelection = -1;
         while (menuSelection != 0) {
             consoleService.printMainMenu();
-            menuSelection = consoleService.promptForMenuSelection("Please choose an option: ");
+            menuSelection = consoleService.promptForMenuSelection("Please choose an option (#): ");
             if (menuSelection == 1) {
                 viewCurrentBalance();
             } else if (menuSelection == 2) {
                 viewTransferHistory();
             } else if (menuSelection == 3) {
+                viewTransferHistory();
                 viewTransferDetails();
             } else if (menuSelection == 4) {
                 sendBucks();
@@ -98,6 +102,7 @@ public class App {
                 handleLogout();
                 loginMenu();
             } else if (menuSelection == 0) {
+                System.out.println("Closing App...");
                 continue;
             } else {
                 System.out.println("Invalid Selection");
@@ -188,53 +193,6 @@ public class App {
         }
     }
 
-
-
-
-
-//    private void viewPendingRequests() {
-//        try {
-//            int userId = currentUser.getUser().getId();
-//            List<TransferDTO> pendingTransfers = transferService.getPendingTransfersByUserId(userId);
-//            if (pendingTransfers.isEmpty()) {
-//                System.out.println("You have no pending transfers.");
-//                return;
-//            }
-//            consoleService.printTransfers(pendingTransfers);
-//            int transferId = consoleService.promptForInt("Enter the ID of the transfer you want to approve/reject (or 0 to cancel): ");
-//            if (transferId == 0) {
-//                System.out.println("Cancelled.");
-//                return;
-//            }
-//            TransferDTO selectedTransfer = pendingTransfers.stream()
-//                    .filter(t -> t.getTransferId() == transferId)
-//                    .findFirst()
-//                    .orElse(null);
-//            if (selectedTransfer == null) {
-//                System.out.println("Invalid transfer ID.");
-//                return;
-//            }
-//            BigDecimal balance = accountService.getBalance();
-//            if (selectedTransfer.getAmount().compareTo(balance) > 0) {
-//                System.out.println("Insufficient balance to approve this transfer.");
-//                return;
-//            }
-//            String action = consoleService.promptForString("Type 'A' to approve or 'R' to reject: ");
-//            if (action.equalsIgnoreCase("A")) {
-//                transferService.approveTransfer(transferId);
-//                System.out.println("Transfer approved.");
-//            } else if (action.equalsIgnoreCase("R")) {
-//                transferService.rejectTransfer(transferId);
-//                System.out.println("Transfer rejected.");
-//            } else {
-//                System.out.println("Invalid choice. Cancelling action.");
-//            }
-//        } catch (Exception e) {
-//            System.out.println("Error retrieving pending transfers.");
-//            e.printStackTrace();
-//        }
-//    }
-
     private void sendBucks() {
         try {
             List<UserDTO> users = transferService.getAllUsers();
@@ -269,7 +227,7 @@ public class App {
     }
 
     private void viewTransferDetails() {
-        int transferId = consoleService.promptForInt("Enter the Transfer ID: ");
+        int transferId = consoleService.promptForInt("Enter a Transfer ID from the List: ");
         try {
             TransferDTO transfer = transferService.getTransferDetails(transferId);
             consoleService.printTransferDetails(transfer);

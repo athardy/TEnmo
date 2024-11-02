@@ -35,33 +35,56 @@ public class ConsoleService {
         System.out.println("/_  __/ __/__  __ _  ___");
         System.out.println(" / / / _// _ \\/  ' \\/ _ \\");
         System.out.println("/_/ /___/_//_/_/_/_/\\___/");
+        System.out.println("         C A S H  A P P ™   ");
+        System.out.println("©Hardy & Laning NLR 2024©");
+
+
+
+
+
+
     }
 
     public void printGreeting() {
+        System.out.println("");
         System.out.println("*************************");
         System.out.println("*   Welcome to TEnmo!   *");
         System.out.println("*************************");
+        System.out.println("");
+
     }
 
     public void printLoginMenu() {
-        System.out.println();
-        System.out.println("1: Register");
-        System.out.println("2: Login");
-        System.out.println("0: Exit");
+        System.out.println("*************************");
+        System.out.println("* 1: Register New User  *");
+        System.out.println("*************************");
+        System.out.println("* 2: Login              *");
+        System.out.println("*************************");
+        System.out.println("* 0: Exit Program       *");
+        System.out.println("*************************");
         System.out.println();
     }
 
     public void printMainMenu() {
-        System.out.println();
-        System.out.println("1: View your current balance");
-        System.out.println("2: View your past transfers");
-        System.out.println("3: View transfer details"); // New option
-        System.out.println("4: Send TE bucks");
-        System.out.println("5: Request TE bucks");
-        System.out.println("6: View pending requests");
-        System.out.println("9: Logout");
-        System.out.println("0: Exit Application");
-        System.out.println();
+        System.out.println("");
+        System.out.println("*********************************");
+        System.out.println("* 1: View your current balance  *");
+        System.out.println("*********************************");
+        System.out.println("* 2: View past transactions     *");
+        System.out.println("*********************************");
+        System.out.println("* 3: View transaction details   *");
+        System.out.println("*********************************");
+        System.out.println("* 4: Send TE bucks              *");
+        System.out.println("*********************************");
+        System.out.println("* 5: Request TE bucks           *");
+        System.out.println("*********************************");
+        System.out.println("* 6: View pending requests      *");
+        System.out.println("*********************************");
+        System.out.println("* 9: Logout                     *");
+        System.out.println("*********************************");
+        System.out.println("* 0: Exit Program               *");
+        System.out.println("*********************************");
+        System.out.println("");
     }
 
     public int promptForTransferId() {
@@ -70,7 +93,9 @@ public class ConsoleService {
 
     public UserCredentials promptForCredentials() {
         String username = promptForString("Username: ");
+        System.out.println("* ↓↓ *Case Sensitive* ↓↓ *");
         String password = promptForString("Password: ");
+
         return new UserCredentials(username, password);
     }
 
@@ -111,35 +136,41 @@ public class ConsoleService {
     }
 
     public void printBalance(BigDecimal balance) {
-        System.out.println("---------------------------------");
+        System.out.println("*********************************");
         System.out.println("Your current balance is: $" + balance);
-        System.out.println("---------------------------------");
+        System.out.println("*********************************");
     }
 
     public void printTransfers(List<TransferDTO> transfers) {
-        System.out.println("--------------------------------------------------------------");
+        System.out.println("******************************************************************");
         System.out.println("Transfers");
-        System.out.println("ID     $ From / $ To                                  Amount");
-        System.out.println("--------------------------------------------------------------");
+        System.out.println("ID             From /   To                 Amount       Status");
+        System.out.println("******************************************************************");
 
         for (TransferDTO transfer : transfers) {
-            String fromTo = transfer.getFromUsername()+"/"+transfer.getToUsername();//(transfer.getAccountFrom() == getCurrentAccountId()) ? "To: " + transfer.getToUsername() : "From: " + transfer.getFromUsername();
-            System.out.printf("%-12d %-40s $%.2f%n", transfer.getTransferId(), fromTo, transfer.getAmount());
+            String fromTo = transfer.getFromUsername() + " to " + transfer.getToUsername();
+            System.out.printf("%-12d %-30s $%-10.2f %s%n",
+                    transfer.getTransferId(),
+                    fromTo,
+                    transfer.getAmount(),
+                    transfer.getTransferStatus()); // Add status here
         }
 
-        System.out.println("--------------------------------------------------------------");
+        System.out.println("******************************************************************");
     }
 
+
     public void printTransferDetails(TransferDTO transfer) {
-        System.out.println("-------------------------------------------");
+        System.out.println("*******************************************");
         System.out.println("Transfer Details");
-        System.out.println("-------------------------------------------");
+        System.out.println("*******************************************");
         System.out.println("ID: " + transfer.getTransferId());
         System.out.println("From Account: " + transfer.getFromUsername());
         System.out.println("To Account: " + transfer.getToUsername());
+        System.out.println("Type: " + transfer.getTransferType());
         System.out.println("Status: " + transfer.getTransferStatus());
         System.out.printf("Amount: $%.2f%n", transfer.getAmount());
-        System.out.println("-------------------------------------------");
+        System.out.println("*******************************************");
     }
 
 
@@ -149,25 +180,25 @@ public class ConsoleService {
 
     public void printUsers(List<UserDTO> users, int currentUserId) {
         System.out.println("Available Users:");
-        System.out.println("-------------------------------------------");
+        System.out.println("*******************************************");
         for (UserDTO user : users) {
             if (user.getUserId() != currentUserId) {
                 System.out.printf("Account ID: %-10d Username: %s%n", user.getAccountId(), user.getUsername());
             }
         }
-        System.out.println("-------------------------------------------");
+        System.out.println("*******************************************");
     }
 
     public void printRequestDetails(TransferDTO transfer) {
-        System.out.println("-------------------------------------------");
+        System.out.println("*******************************************");
         System.out.println("Request Details");
-        System.out.println("-------------------------------------------");
+        System.out.println("*******************************************");
         System.out.println("ID: " + transfer.getTransferId());
         System.out.println("From Account: " + transfer.getFromUsername());
         System.out.println("To Account: " + transfer.getToUsername());
         System.out.println("Status: " + transfer.getTransferStatus());
         System.out.printf("Amount: $%.2f%n", transfer.getAmount());
-        System.out.println("-------------------------------------------");
+        System.out.println("*******************************************");
     }
 
 
