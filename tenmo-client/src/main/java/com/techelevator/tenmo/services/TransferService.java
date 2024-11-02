@@ -21,17 +21,19 @@ public class TransferService {
     private final RestTemplate restTemplate = new RestTemplate();
     private String authToken;
 
-
     private static final int REJECTED_STATUS_ID = 3;
 
+    // Sets the authorization token for authenticated requests.
     public void setAuthToken(String authToken) {
         this.authToken = authToken;
     }
 
+    // Constructor initializes the API base URL for the service.
     public TransferService(String apiUrl) {
         this.API_BASE_URL = apiUrl;
     }
 
+    // Sends a request to create a new transfer based on provided data.
     public TransferDTO createTransfer(CreateTransferDTO createTransferDTO) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(authToken);
@@ -40,6 +42,7 @@ public class TransferService {
         return restTemplate.postForObject(API_BASE_URL + "/transfer", entity, TransferDTO.class);
     }
 
+    // Retrieves all transfers associated with a specific user ID.
     public List<TransferDTO> getTransfersByUserId(int userId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(authToken);
@@ -51,6 +54,7 @@ public class TransferService {
         return Arrays.asList(transferArray);
     }
 
+    // Retrieves details of a specific transfer by transfer ID.
     public TransferDTO getTransferDetails(int transferId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(authToken);
@@ -60,6 +64,7 @@ public class TransferService {
                 API_BASE_URL + "/transfer/details/" + transferId, HttpMethod.GET, entity, TransferDTO.class).getBody();
     }
 
+    // Retrieves all users except the current user, based on user ID.
     public List<UserDTO> getAllUsers(int currentUserId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(authToken);
@@ -73,8 +78,7 @@ public class TransferService {
                 .collect(Collectors.toList());
     }
 
-
-
+    // Retrieves all pending transfers for a specific user.
     public List<TransferDTO> getPendingTransfersByUserId(int userId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(authToken);
@@ -85,61 +89,18 @@ public class TransferService {
         return Arrays.asList(transferArray);
     }
 
-//    public TransferDTO updateTransferStatus(int transferId, String action) {
-//        TransferDTO transfer = transferDao.getTransferById(transferId);
-//        if (!transfer.getTransferStatus().equals("Pending")) {
-//            throw new IllegalArgumentException("Only pending transfers can be updated.");
-//        }
-//        if (action.equalsIgnoreCase("approve")) {
-//            BigDecimal accountBalance = accountDao.getBalanceByUserId(transfer.getAccountFrom());//updated and fixed
-//            if (accountBalance.compareTo(transfer.getAmount()) < 0) {
-//                throw new IllegalArgumentException("Insufficient funds");
-//            }
-//            transfer.setTransferStatusId(APPROVED_STATUS_ID);
-//            transferDao.updateTransferStatus(transferId, APPROVED_STATUS_ID);
-//            accountDao.updateBalances(transfer.getAccountFrom(), transfer.getAccountTo(), transfer.getAmount());
-//        } else if (action.equalsIgnoreCase("reject")) {
-//            transfer.setTransferStatusId(REJECTED_STATUS_ID);
-//            transferDao.updateTransferStatus(transferId, REJECTED_STATUS_ID);
-//        } else {
-//            throw new IllegalArgumentException("Invalid input.");
-//        }
-//        return transfer;
-//    }
-
+    // Provides a default TransferDTO object when a transfer ID is not found.
     private TransferDTO getTransferByTransferId(int transferId){
         TransferDTO transfer = new TransferDTO();
         transfer.setTransferId(transferId);
-        transfer.setTransferStatusId(1);
+        transfer.setTransferStatusId(1);  // Default status set to 'Pending'
         transfer.setAmount(BigDecimal.valueOf(0.00));
-        transfer.setAccountFrom(1001);
-        transfer.setAccountTo(1002);
+        transfer.setAccountFrom(1001);    // Default sender account
+        transfer.setAccountTo(1002);      // Default receiver account
         return  transfer;
     }
 
-
-//    public TransferDTO approveTransfer(int transferId){
-//    TransferDTO transfer = getTransferByTransferId(transferId);
-//    if (transfer != null) {
-//        transfer.setTransferStatusId(2);
-//        System.out.println("Transfer approved with ID: " + transferId);
-//    } else {
-//        System.out.println("Transfer ID not found: " + transferId);
-//    }
-//    return transfer;
-//    }
-//
-//    public TransferDTO rejectTransfer (int transferId) {
-//        TransferDTO transfer = getTransferByTransferId(transferId);
-//        if (transfer != null) {
-//            transfer.setTransferStatusId(3);
-//            System.out.println("Transfer rejected with ID: " + transferId);
-//        } else {
-//            System.out.println("Transfer ID not found: " + transferId);
-//        }
-//        return transfer;
-//    }
-
+    // Approves a specific transfer by its transfer ID.
     public TransferDTO approveTransfer(int transferId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(authToken);
@@ -150,6 +111,7 @@ public class TransferService {
                 HttpMethod.PUT, entity, TransferDTO.class).getBody();
     }
 
+    // Rejects a specific transfer by its transfer ID.
     public TransferDTO rejectTransfer(int transferId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(authToken);
