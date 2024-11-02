@@ -94,6 +94,9 @@ public class App {
                 requestBucks();
             } else if (menuSelection == 6) {
                 viewPendingRequests();
+            } else if (menuSelection == 9) {
+                handleLogout();
+                loginMenu();
             } else if (menuSelection == 0) {
                 continue;
             } else {
@@ -101,6 +104,13 @@ public class App {
             }
             consoleService.pause();
         }
+    }
+
+    private void handleLogout() {
+        currentUser = null;
+        accountService.setAuthToken(null);
+        transferService.setAuthToken(null);
+        System.out.println("You have been logged out.");
     }
 
     private void viewCurrentBalance() {
