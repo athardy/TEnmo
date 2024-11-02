@@ -46,8 +46,10 @@ public class App {
                 handleRegister();
             } else if (menuSelection == 2) {
                 handleLogin();
-            } else if (menuSelection == 0){
+            } else if (menuSelection == 0) {
                 System.out.println("Closing app...");
+            } else if (menuSelection == 66){
+                consoleService.print66();
             } else if (menuSelection != 0) {
                 System.out.println("Invalid Selection");
                 consoleService.pause();
