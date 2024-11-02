@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TransferService {
@@ -59,7 +60,7 @@ public class TransferService {
                 API_BASE_URL + "/transfer/details/" + transferId, HttpMethod.GET, entity, TransferDTO.class).getBody();
     }
 
-    public List<UserDTO> getAllUsers() {
+    public List<UserDTO> getAllUsers(int currentUserId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(authToken);
         HttpEntity<Void> entity = new HttpEntity<>(headers);
@@ -67,8 +68,12 @@ public class TransferService {
         UserDTO[] userArray = restTemplate.exchange(
                 API_BASE_URL + "/account/users", HttpMethod.GET, entity, UserDTO[].class).getBody();
 
-        return Arrays.asList(userArray);
+        return Arrays.stream(userArray)
+                .filter(user -> user.getUserId() != currentUserId)  // Filter out the current user
+                .collect(Collectors.toList());
     }
+
+
 
     public List<TransferDTO> getPendingTransfersByUserId(int userId) {
         HttpHeaders headers = new HttpHeaders();

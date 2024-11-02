@@ -136,9 +136,11 @@ public class App {
 
     private void viewPendingRequests() {
         try {
-            List<UserDTO> users = transferService.getAllUsers();
-            int userId = currentUser.getUser().getId();  // Get the current user's ID
-            List<TransferDTO> pendingTransfers = transferService.getPendingTransfersByUserId(userId);
+            int currentUserId = currentUser.getUser().getId();
+
+            List<UserDTO> users = transferService.getAllUsers(currentUserId);
+
+            List<TransferDTO> pendingTransfers = transferService.getPendingTransfersByUserId(currentUserId);
 
             if (pendingTransfers.isEmpty()) {
                 System.out.println("You have no pending transfers.");
@@ -163,11 +165,9 @@ public class App {
                 return;
             }
 
-
-            int currentUserId = currentUser.getUser().getId();
             int recipientUserId = accountService.getUserIdByAccountId(selectedTransfer.getAccountTo());
-            if (currentUserId == recipientUserId){
-                System.out.println("You are not authorized to approve your own transfer requests!!!! naughty.");
+            if (currentUserId == recipientUserId) {
+                System.out.println("You are not authorized to approve your own transfer requests.");
                 return;
             }
 
@@ -193,16 +193,28 @@ public class App {
         }
     }
 
+
     private void sendBucks() {
         try {
-            List<UserDTO> users = transferService.getAllUsers();
-            consoleService.printUsers(users, currentUser.getUser().getId());
+            int currentUserId = currentUser.getUser().getId();
+            List<UserDTO> users = transferService.getAllUsers(currentUserId);
+            consoleService.printUsers(users, currentUserId);
+
             int recipientId = consoleService.promptForInt("Enter the account ID of the recipient: ");
-            int accountFrom = accountService.getAccountIdByUserId(currentUser.getUser().getId());
+            int accountFrom = accountService.getAccountIdByUserId(currentUserId);
+
+            boolean validRecipient = users.stream().anyMatch(user -> user.getAccountId() == recipientId);
+
+            if (!validRecipient) {
+                System.out.println("That account doesn't exist. Please try again.");
+                return;
+            }
+
             if (accountFrom == recipientId) {
                 System.out.println("You cannot send TE bucks to your own account.");
                 return;
             }
+
             BigDecimal amount = consoleService.promptForBigDecimal("Enter amount to send: ");
             BigDecimal balance = accountService.getBalance();
             if (amount.compareTo(BigDecimal.ZERO) <= 0) {
@@ -213,6 +225,7 @@ public class App {
                 System.out.println("Insufficient balance. Please enter an amount within your available balance.");
                 return;
             }
+
             CreateTransferDTO transferRequest = new CreateTransferDTO();
             transferRequest.setAccountFrom(accountFrom);
             transferRequest.setAccountTo(recipientId);
@@ -226,6 +239,7 @@ public class App {
         }
     }
 
+
     private void viewTransferDetails() {
         int transferId = consoleService.promptForInt("Enter a Transfer ID from the List: ");
         try {
@@ -238,19 +252,30 @@ public class App {
 
     private void requestBucks() {
         try {
-            List<UserDTO> users = transferService.getAllUsers();
             int currentUserId = currentUser.getUser().getId();
+            List<UserDTO> users = transferService.getAllUsers(currentUserId);
             consoleService.printUsers(users, currentUserId);
+
             int requestedFromUserId = consoleService.promptForInt("Enter the account ID of the user you want to request TE Bucks from: ");
+
+            boolean validRecipient = users.stream().anyMatch(user -> user.getAccountId() == requestedFromUserId);
+
+            if (!validRecipient) {
+                System.out.println("That account doesn't exist. Please try again.");
+                return;
+            }
+
             if (requestedFromUserId == accountService.getAccountIdByUserId(currentUserId)) {
                 System.out.println("You cannot request TE Bucks from your own account.");
                 return;
             }
+
             BigDecimal amount = consoleService.promptForBigDecimal("Enter the amount to request: ");
             if (amount.compareTo(BigDecimal.ZERO) <= 0) {
                 System.out.println("Request amount must be greater than zero.");
                 return;
             }
+
             CreateTransferDTO transferRequest = new CreateTransferDTO();
             transferRequest.setAccountFrom(requestedFromUserId);
             transferRequest.setAccountTo(accountService.getAccountIdByUserId(currentUserId));
@@ -258,10 +283,13 @@ public class App {
             transferRequest.setTransferTypeId(REQUEST_TYPE_ID);
             transferRequest.setTransferStatusId(PENDING_STATUS_ID);
             TransferDTO transfer = transferService.createTransfer(transferRequest);
+
             consoleService.printRequestDetails(transfer);
         } catch (Exception e) {
             System.out.println("Error processing transfer request. Please try again.");
             e.printStackTrace();
         }
     }
+
+
 }
