@@ -207,16 +207,17 @@ public class App {
                 return;
             }
 
-            // Check if the current balance is sufficient to approve the transfer
-            BigDecimal balance = accountService.getBalance();
-            if (selectedTransfer.getAmount().compareTo(balance) > 0) {
-                System.out.println("Insufficient balance to approve this transfer.");
-                return;  // Exit if balance is insufficient
-            }
-
             // Prompt the user to approve ('A') or reject ('R') the transfer
             String action = consoleService.promptForString("Type 'A' to approve or 'R' to reject: ");
             if (action.equalsIgnoreCase("A")) {
+
+                // Check if the current balance is sufficient to approve the transfer
+                BigDecimal balance = accountService.getBalance();
+                if (selectedTransfer.getAmount().compareTo(balance) > 0) {
+                    System.out.println("Insufficient balance to approve this transfer.");
+                    return;  // Exit if balance is insufficient
+                }
+
                 // Approve the transfer and notify the user
                 transferService.approveTransfer(transferId);
                 System.out.println("Transfer approved.");
